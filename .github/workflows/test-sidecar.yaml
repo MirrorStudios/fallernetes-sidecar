@@ -1,4 +1,4 @@
-name: Operator Unit Tests
+name: Sidecar Unit Tests
 
 on:
   pull_request:
