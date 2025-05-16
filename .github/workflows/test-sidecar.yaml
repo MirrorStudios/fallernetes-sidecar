@@ -1,0 +1,23 @@
+name: Operator Unit Tests
+
+on:
+  pull_request:
+    paths:
+      - 'internal/**'
+      - '.github/workflows/test-sidecar.yaml' # re-run if workflow changes
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run tests
+        run:  go test $(go list ./... | grep -v /e2e) -coverprofile cover.out
