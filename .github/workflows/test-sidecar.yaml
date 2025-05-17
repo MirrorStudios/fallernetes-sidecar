@@ -6,6 +6,9 @@ on:
       - 'internal/**'
       - '.github/workflows/test-sidecar.yaml'
 
+permissions:
+  contents: read
+
 jobs:
   changes:
     name: Detect Changes
