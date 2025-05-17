@@ -4,20 +4,50 @@ on:
   pull_request:
     paths:
       - 'internal/**'
-      - '.github/workflows/test-sidecar.yaml' # re-run if workflow changes
+      - '.github/workflows/test-sidecar.yaml'
+
+permissions:
+  contents: read
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      run-tests: ${{ steps.filter.outputs.run-tests }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changes
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        with:
+          filters: |
+            run-tests:
+              - 'internal/**'
+              - '.github/workflows/test-sidecar.yml'
+
+
   unit-test:
     runs-on: ubuntu-latest
-
+    name: Run unit tests
+    needs:
+      - changes
     steps:
+      - name: Check if test should run
+        if: needs.changes.outputs.run-tests != 'true'
+        run: echo "No relevant changes. Skipping tests."
+
       - name: Checkout code
+        if: needs.changes.outputs.run-tests == 'true'
         uses: actions/checkout@v4
 
       - name: Set up Go
+        if: needs.changes.outputs.run-tests == 'true'
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
 
       - name: Run tests
+        if: needs.changes.outputs.run-tests == 'true'
         run:  go test $(go list ./... | grep -v /e2e) -coverprofile cover.out
